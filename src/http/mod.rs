@@ -3,6 +3,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use crate::config::Config;
 use anyhow::Context;
 use axum::Router;
+use sqlx::PgPool;
 use tokio::net::TcpListener;
 
 mod nodes;
@@ -10,11 +11,13 @@ mod nodes;
 #[derive(Clone)]
 pub struct ApiContext {
     pub config: Config,
+    pub db: PgPool,
 }
 
-pub async fn serve(config: Config) -> anyhow::Result<()> {
+pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
     let api_context = ApiContext {
         config: config.clone(),
+        db,
     };
 
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, config.port));
