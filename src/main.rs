@@ -7,6 +7,8 @@ use sqlx::postgres::PgPoolOptions;
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
 
+    env_logger::init();
+
     let config = Config::parse();
     let db = PgPoolOptions::new()
         .max_connections(50)

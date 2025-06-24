@@ -1,10 +1,17 @@
-use std::net::{Ipv4Addr, SocketAddr};
+use std::{
+    net::{Ipv4Addr, SocketAddr},
+    time::Duration,
+};
 
 use crate::config::Config;
 use anyhow::Context;
 use axum::Router;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
+use tower_http::{
+    catch_panic::CatchPanicLayer, compression::CompressionLayer, timeout::TimeoutLayer,
+    trace::TraceLayer,
+};
 
 mod nodes;
 
@@ -31,7 +38,15 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
 }
 
 fn app_router(api_context: ApiContext) -> Router {
-    Router::new().merge(nodes::router()).with_state(api_context)
+    Router::new()
+        .merge(nodes::router())
+        .layer((
+            CompressionLayer::new(),
+            TraceLayer::new_for_http().on_failure(()),
+            TimeoutLayer::new(Duration::from_secs(30)),
+            CatchPanicLayer::new(),
+        ))
+        .with_state(api_context)
 }
 
 async fn shutdown_signal() {
@@ -40,13 +55,13 @@ async fn shutdown_signal() {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
-            .expect("failed to install Ctrl+C handler");
+            .expect("Failed to install Ctrl+C signal handler");
     };
 
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
+            .expect("Failed to install terminate signal handler")
             .recv()
             .await;
     };
