@@ -4,8 +4,5 @@ CREATE TABLE nodes
   alias      text                not null,
   capacity   numeric             not null,
   first_seen timestamptz         not null,
-  created_at timestamptz         not null default now(),
-  updated_at timestamptz
+  created_at timestamptz         not null default now()
 );
-
-SELECT trigger_updated_at('nodes');
