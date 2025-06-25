@@ -57,6 +57,7 @@ jobs:
       - name: Run tests
         run: |
           cp .env.example .env
+          cargo sqlx db setup
           cargo test --release --target x86_64-unknown-linux-musl
 
       - name: Log in to the Container registry
