@@ -19,6 +19,10 @@ migrate:
 fmt:
 	cargo fmt
 
+.PHONY: test
+test:
+	cargo test
+
 .PHONY: run-dev
 run-dev:
 	env RUST_LOG=debug cargo run
