@@ -46,7 +46,7 @@ The app will be available at `http://localhost:8080`, if you don't change the po
 
 My main focus was to make the API as simple and safe as possible.
 
-I spent some time making sure most potential errors are properly handled, so the process doesn’t crash during execution.
+I spent some time making sure most potential errors are properly handled, so the process doesn't crash during execution.
 
 ## How long did you spend on this project?
 
@@ -60,10 +60,10 @@ Yes, I made some trade-offs. If I had more time, I would improve the sync proces
 every time. Instead, I would only add new records or update the ones that changed. This way, it would be more efficient
 and avoid unnecessary database work.
 
-Another trade-off was keeping the insertion logic simple, without implementing batching. PostgreSQL has a practical limit
-on the number of rows per INSERT statement (typically around 1000 rows), and the current implementation does not account for that.
-Ideally, I would batch the insertions in chunks to ensure compatibility with large datasets. However, since pagination or data
-limits were not part of the initial requirements, I chose to prioritize simplicity over robustness in this case.
+Another trade-off was keeping the [insertion logic](https://github.com/samueldurantes/bi/blob/main/src/synchronizer.rs#L57-L76) simple, without
+implementing batching. PostgreSQL has a practical limit on the number of rows per INSERT statement (typically around 1000 rows), and the current
+implementation doesn't account for that. Ideally, I would batch the insertions in chunks to ensure compatibility with large datasets. However, since
+pagination or data limits were not part of the initial requirements, I chose to prioritize simplicity over robustness in this case.
 
 ## What do you think is the weakest part of your project?
 
