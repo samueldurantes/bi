@@ -1,5 +1,5 @@
 use anyhow::Context;
-use bi::{config::Config, http};
+use bi::{config::Config, http, synchronizer::synchronizer};
 use clap::Parser;
 use sqlx::postgres::PgPoolOptions;
 
@@ -15,6 +15,9 @@ async fn main() -> anyhow::Result<()> {
         .connect(&config.database_url)
         .await
         .context("Error when trying to connect to database")?;
+
+    // Spawns the synchronizer (hypocritical name LOL) task
+    tokio::spawn(synchronizer(db.clone()));
 
     sqlx::migrate!().run(&db).await?;
     http::serve(config, db).await?;
