@@ -6,6 +6,7 @@ use std::{
 use crate::config::Config;
 use anyhow::Context;
 use axum::Router;
+use error::Error;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
 use tower_http::{
@@ -13,7 +14,10 @@ use tower_http::{
     trace::TraceLayer,
 };
 
+mod error;
 mod nodes;
+
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Clone)]
 pub struct ApiContext {
