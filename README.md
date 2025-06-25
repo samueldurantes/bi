@@ -60,6 +60,11 @@ Yes, I made some trade-offs. If I had more time, I would improve the sync proces
 every time. Instead, I would only add new records or update the ones that changed. This way, it would be more efficient
 and avoid unnecessary database work.
 
+Another trade-off was keeping the insertion logic simple, without implementing batching. PostgreSQL has a practical limit
+on the number of rows per INSERT statement (typically around 1000 rows), and the current implementation does not account for that.
+Ideally, I would batch the insertions in chunks to ensure compatibility with large datasets. However, since pagination or data
+limits were not part of the initial requirements, I chose to prioritize simplicity over robustness in this case.
+
 ## What do you think is the weakest part of your project?
 
 The weakest part of my project is that it doesn’t check if any record from the original API has disappeared. In other
@@ -67,3 +72,12 @@ words, once a record is added, it will always show up in the results from my API
 original source.
 
 ## Is there any other information you’d like us to know?
+
+Yes, I added automated tests to ensure correctness and reliability. A CI/CD pipeline was also set up using GitHub Actions to automate testing and
+deployment. The final build is deployed on my personal homelab, making it easy to test and iterate quickly.
+
+You can test the live deployment by running:
+
+```bash
+curl https://bi.samueldurante.com/nodes
+```
