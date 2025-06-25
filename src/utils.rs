@@ -1,7 +1,7 @@
 use std::time::UNIX_EPOCH;
 
 use chrono::{DateTime, Utc};
-use serde::Serializer;
+use serde::{Deserialize, Deserializer, Serializer, de::Error};
 
 /// Converts sats (u64) to bitcoin (f64).
 /// 1 BTC = 10^8 sats.
@@ -30,5 +30,24 @@ where
     match val {
         Some(v) => serializer.serialize_str(&v.to_string()),
         None => serializer.serialize_none(),
+    }
+}
+
+/// Convert a String value to f64
+/// You can use this function directly on enum definition, like this:
+///
+/// #[derive(Deserialize, Serialize)]
+/// enum Foo {
+///     #[serde(serialize_with = "f64_to_string", deserialize_with = "string_to_f64")]
+///     Bar: f64,
+/// }
+pub fn string_to_f64<'de, D>(deserializer: D) -> Result<Option<f64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer)?;
+    match opt {
+        Some(s) => s.parse::<f64>().map(Some).map_err(D::Error::custom),
+        None => Ok(None),
     }
 }

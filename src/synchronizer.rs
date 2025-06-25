@@ -11,7 +11,7 @@ use crate::{
     utils::{sats_to_btc, unix_to_timestamptz},
 };
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct NodeLocation {
     de: Option<String>,
@@ -26,7 +26,7 @@ struct NodeLocation {
     zh_cn: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Node {
     public_key: String,
@@ -94,5 +94,63 @@ pub async fn synchronizer(config: Config, db: PgPool) {
             }
             Err(e) => error!("Error when trying to get nodes data: {e}"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::{PgPool, Row};
+
+    #[tokio::test]
+    async fn test_get_nodes_data() {
+        let result = get_nodes_data().await;
+
+        assert!(result.is_ok(), "Expected Ok(...)");
+    }
+
+    #[sqlx::test]
+    async fn test_save_nodes_data(db: PgPool) {
+        let node = Node {
+            public_key: "020d1617e27ac022395352f2b3774969593d3d6ddff6fb117d820a9dda8da45217"
+                .to_string(),
+            alias: "exampleNode".to_string(),
+            channels: 10,
+            capacity: 100,
+            first_seen: 1625097600,
+            updated_at: 1729968000,
+            city: Some(NodeLocation {
+                de: Some("München".to_string()),
+                en: "Munich".to_string(),
+                es: Some("Múnich".to_string()),
+                fr: Some("Munich".to_string()),
+                ja: None,
+                pt_br: Some("Munique".to_string()),
+                ru: Some("Мюнхен".to_string()),
+                zh_cn: Some("慕尼黑".to_string()),
+            }),
+            country: Some(NodeLocation {
+                de: Some("Deutschland".to_string()),
+                en: "Germany".to_string(),
+                es: Some("Alemania".to_string()),
+                fr: Some("Allemagne".to_string()),
+                ja: Some("ドイツ".to_string()),
+                pt_br: Some("Alemanha".to_string()),
+                ru: Some("Германия".to_string()),
+                zh_cn: Some("德国".to_string()),
+            }),
+            iso_code: Some("DE".to_string()),
+            subdivision: Some("Bavaria".to_string()),
+        };
+
+        let _ = save_nodes_data(&db, vec![node.clone()]).await;
+
+        let row = sqlx::query("SELECT public_key, alias FROM nodes")
+            .fetch_one(&db)
+            .await
+            .unwrap();
+        let public_key: String = row.get("public_key");
+
+        assert_eq!(public_key, node.public_key);
     }
 }
