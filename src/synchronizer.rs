@@ -6,9 +6,10 @@ use log::{error, info};
 use serde::Deserialize;
 use sqlx::{PgPool, QueryBuilder};
 
-use crate::utils::{sats_to_btc, unix_to_timestamptz};
-
-const POOLING_INTERVAL: u64 = 60;
+use crate::{
+    config::Config,
+    utils::{sats_to_btc, unix_to_timestamptz},
+};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,10 +75,11 @@ async fn save_nodes_data(db: &PgPool, nodes: Nodes) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// This function runs at each interval defined by POOLING_INTERVAL in order to
-/// synchronize the mempool API data with the application database.
-pub async fn synchronizer(db: PgPool) {
-    let mut interval = tokio::time::interval(Duration::from_secs(POOLING_INTERVAL));
+/// This function runs at each interval defined by POOLING_INVERVAL_IN_SECONDS (env var)
+/// in order to synchronize the mempool API data with the application database.
+pub async fn synchronizer(config: Config, db: PgPool) {
+    let mut interval =
+        tokio::time::interval(Duration::from_secs(config.pooling_inverval_in_seconds));
 
     loop {
         interval.tick().await;

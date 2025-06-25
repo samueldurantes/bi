@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
         .context("Error when trying to connect to database")?;
 
     // Spawns the synchronizer (hypocritical name LOL) task
-    tokio::spawn(synchronizer(db.clone()));
+    tokio::spawn(synchronizer(config.clone(), db.clone()));
 
     sqlx::migrate!().run(&db).await?;
     http::serve(config, db).await?;
