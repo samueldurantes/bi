@@ -1,3 +1,4 @@
+use crate::utils::f64_to_string;
 use axum::{Json, Router, extract::State, routing::get};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
@@ -12,6 +13,7 @@ pub(crate) fn router() -> Router<ApiContext> {
 struct Node {
     public_key: String,
     alias: String,
+    #[serde(serialize_with = "f64_to_string")]
     capacity: Option<f64>,
     #[serde(with = "time::serde::rfc3339")]
     first_seen: OffsetDateTime,
